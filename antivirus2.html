@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>Компьютерные вирусы и защита</title>
+  <style>
+    html, body {
+      overscroll-behavior-x: none;
+      overflow-x: hidden;
+      touch-action: pan-y;
+    }
+
+    :root {
+      --bg: #121212;
+      --text: #e0e0e0;
+      --card: #1e1e1e;
+      --header: #0d0d0d;
+      --accent: #4da6ff;
+      --border: #333;
+      --panel-bg: #1a1a1a;
+      --link: #4da6ff;
+    }
+
+    .light-theme {
+      --bg: #f8f9fa;
+      --text: #212529;
+      --card: #ffffff;
+      --header: #343a40;
+      --accent: #0069d9;
+      --border: #dee2e6;
+      --panel-bg: #e9ecef;
+      --link: #0069d9;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      transition: background-color 0.3s, color 0.3s;
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+    #sidebar {
+      width: 260px;
+      background: var(--header);
+      color: white;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      overflow-y: auto;
+      padding: 20px 0;
+      z-index: 100;
+    }
+
+    #sidebar h2 {
+      padding: 0 20px 15px;
+      font-size: 1.25em;
+      color: #bbb;
+    }
+
+    #sidebar ul {
+      list-style: none;
+    }
+
+    #sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      color: #ccc;
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    #sidebar a:hover,
+    #sidebar a.active {
+      background: var(--accent);
+      color: white;
+    }
+
+    .icon {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+
+    #content {
+      flex: 1;
+      margin-left: 260px;
+      padding: 20px;
+      max-width: calc(100% - 260px);
+    }
+
+    header {
+      background: var(--header);
+      color: white;
+      padding: 20px;
+      margin-bottom: 25px;
+      border-radius: 8px;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 12px;
+    }
+
+    #search-box {
+      width: 100%;
+      max-width: 500px;
+      padding: 10px 16px;
+      border-radius: 24px;
+      border: 1px solid #555;
+      background: var(--panel-bg);
+      color: var(--text);
+      font-size: 15px;
+      margin-top: 12px;
+    }
+
+    .light-theme #search-box {
+      border-color: #aaa;
+    }
+
+    main {
+      max-width: 880px;
+      margin: 0 auto;
+    }
+
+    h2 {
+      font-size: 1.45em;
+      margin: 32px 0 16px;
+      color: var(--accent);
+      scroll-margin-top: 80px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    h3 {
+      font-size: 1.2em;
+      margin: 20px 0 10px;
+      color: var(--accent);
+    }
+
+    p, ul, ol {
+      margin-bottom: 14px;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    ul, ol {
+      padding-left: 24px;
+    }
+
+    code {
+      background: rgba(0,0,0,0.2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: Consolas, monospace;
+      font-size: 0.95em;
+    }
+
+    a {
+      color: var(--link);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 50px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--text);
+      opacity: 0.7;
+      font-size: 0.9em;
+    }
+
+    #theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px solid white;
+      background: none;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .light-theme #theme-toggle {
+      border-color: #333;
+      color: #333;
+    }
+
+    @media (max-width: 768px) {
+      #sidebar {
+        width: 240px;
+        transform: translateX(-100%);
+      }
+      #sidebar.open {
+        transform: translateX(0);
+      }
+      #content {
+        margin-left: 0;
+        max-width: 100%;
+        padding: 15px;
+      }
+      #menu-btn {
+        display: block;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 101;
+        background: var(--header);
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 18px;
+        cursor: pointer;
+      }
+      header {
+        position: relative;
+        padding-right: 60px;
+      }
+    }
+
+    #menu-btn {
+      display: none;
+    }
+
+    #search-hint {
+      font-size: 0.88em;
+      margin-top: 8px;
+      color: var(--accent);
+      display: none;
+    }
+  </style>
+</head>
+<body class="dark-theme">
+
+<button id="menu-btn" title="Меню">☰</button>
+
+<nav id="sidebar">
+  <h2>Навигация</h2>
+  <ul>
+    <li><a href="#what-is-virus"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z"/></svg> Что такое вирус?</a></li>
+    <li><a href="#types"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Типы вирусов</a></li>
+    <li><a href="#miner"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Майнеры</a></li>
+    <li><a href="#how-to-remove-miner"><svg class="icon" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg> Удаление майнера</a></li>
+    <li><a href="#famous"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg> Известные вирусы</a></li>
+    <li><a href="#utilities"><svg class="icon" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg> Полезные инструменты</a></li>
+    <li><a href="#prevention"><svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Профилактика</a></li>
+  </ul>
+</nav>
+
+<div id="content">
+  <header>
+    <h1>Компьютерные вирусы и защита от них</h1>
+    <input type="text" id="search-box" placeholder="Поиск: Петя, SimpleUnlocker, WannaCry..." autocomplete="off">
+    <div id="search-hint"></div>
+    <button id="theme-toggle" title="Переключить тему">☀️</button>
+  </header>
+
+  <main>
+    <section id="what-is-virus">
+      <h2><svg class="icon" viewBox="0 0 24 24"><path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z"/></svg> Что такое вирус?</h2>
+      <p>Компьютерный вирус — программа, которая копирует себя и внедряется в другие файлы или сектора диска. Цель — нанести вред: украсть данные, замедлить систему, удалить файлы.</p>
+    </section>
+
+    <section id="types">
+      <h2><svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Типы вирусов</h2>
+      <ul>
+        <li><strong>Файловые</strong> — заражают .exe, .dll.</li>
+        <li><strong>Загрузочные</strong> — активируются при старте ПК.</li>
+        <li><strong>Макровирусы</strong> — через документы Word/Excel.</li>
+        <li><strong>Трояны</strong> — маскируются под полезное ПО.</li>
+        <li><strong>Черви</strong> — самораспространяются по сети.</li>
+        <li><strong>Adware/Spyware</strong> — показывают рекламу или крадут данные.</li>
+        <li><strong>Майнеры</strong> — используют ресурсы ПК для майнинга.</li>
+        <li><strong>Вымогатели (ransomware)</strong> — шифруют файлы и требуют выкуп.</li>
+      </ul>
+    </section>
+
+    <section id="miner">
+      <h2><svg class="icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Майнеры (криптоджекинг)</h2>
+      <p>Скрытая программа, использующая CPU/GPU для майнинга криптовалюты (чаще Monero). Проявляется в виде 100% загрузки процессора, перегрева и шума вентиляторов.</p>
+    </section>
+
+    <section id="how-to-remove-miner">
+      <h2><svg class="icon" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg> Как удалить майнер</h2>
+      <ol>
+        <li>Откройте Диспетчер задач (Ctrl+Shift+Esc).</li>
+        <li>Найдите процесс с высокой загрузкой ЦП и подозрительным именем.</li>
+        <li>Завершите его и удалите файл с диска.</li>
+        <li>Проверьте автозагрузку и службы.</li>
+        <li>Просканируйте систему Malwarebytes или Kaspersky.</li>
+      </ol>
+    </section>
+
+    <section id="famous">
+      <h2><svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg> Известные вирусы</h2>
+
+      <h3 id="virus-iloveyou">ILOVEYOU (2000)</h3>
+      <p>Распространялся через письма с вложением <code>LOVE-LETTER-FOR-YOU.TXT.vbs</code>. Удалял изображения и рассылал себя контактам.</p>
+
+      <h3 id="virus-conficker">Conficker (2008)</h3>
+      <p>Использовал уязвимость MS08-067. Отключал обновления и антивирусы.</p>
+
+      <h3 id="virus-wannacry">WannaCry (2017)</h3>
+      <p>Шифровальщик через уязвимость EternalBlue. Восстановление — только из бэкапа.</p>
+
+      <h3 id="virus-petya">Petya / NotPetya (2016–2017)</h3>
+      <p>Шифрует **загрузочный сектор (MBR)**. NotPetya — кибератака под видом вымогателя.</p>
+
+      <h3 id="virus-stuxnet">Stuxnet (2010)</h3>
+      <p>Целевой промышленный вирус против АЭС. Распространялся через USB.</p>
+
+      <h3 id="virus-emotet">Emotet (2014–2021)</h3>
+      <p>Банковский троян, ставший «доставщиком» других вредоносов.</p>
+
+      <h3 id="virus-mydoom">Mydoom (2004)</h3>
+      <p>Самый быстрый почтовый червь в истории. Замедлял интернет.</p>
+    </section>
+
+    <section id="utilities">
+      <h2><svg class="icon" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg> Полезные инструменты</h2>
+
+      <h3>SimpleUnlocker — мультитул для борьбы с вирусами</h3>
+      <p>Программа <strong>SimpleUnlocker</strong> предназначена для простой разблокировки Windows от вирусов. Это мультитул с набором полезных функций:</p>
+      <ul>
+        <li><strong>Диспетчер задач</strong> — базовый функционал + дополнительные возможности.</li>
+        <li><strong>Автозапуск</strong> — просмотр и удаление программ из автозагрузки.</li>
+        <li><strong>Разблокировка ограничений</strong> — снятие блокировок, прописанных в реестре вирусами.</li>
+        <li><strong>Сторонние утилиты</strong> — запуск и добавление внешних инструментов.</li>
+      </ul>
+      <p>✅ Файл проверен на <a href="https://www.virustotal.com" target="_blank" rel="noopener">VirusTotal</a> — вирусов не обнаружено, присутствуют только ложные срабатывания некоторых антивирусов.<br>
+         🔗 <a href="https://simpleunlocker.ds1nc.ru/?ysclid=mhm32hntg331380893" target="_blank" rel="noopener">Скачать SimpleUnlocker</a></p>
+
+      <h3>Другие рекомендуемые инструменты</h3>
+      <ul>
+        <li><strong>Malwarebytes</strong> — <a href="https://www.malwarebytes.com/" target="_blank" rel="noopener">официальный сайт</a></li>
+        <li><strong>Kaspersky Virus Removal Tool</strong> — <a href="https://www.kaspersky.ru/virus-removal-tool" target="_blank" rel="noopener">официальный сайт</a></li>
+        <li><strong>Dr.Web CureIt!</strong> — <a href="https://free.drweb.ru/cureit/" target="_blank" rel="noopener">официальный сайт</a></li>
+        <li><strong>ESET Online Scanner</strong> — <a href="https://www.eset.com/int/home/online-scanner/" target="_blank" rel="noopener">официальный сайт</a></li>
+        <li><strong>AdwCleaner</strong> — <a href="https://www.malwarebytes.com/adwcleaner" target="_blank" rel="noopener">официальный сайт</a></li>
+      </ul>
+    </section>
+
+    <section id="prevention">
+      <h2><svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> Профилактика</h2>
+      <ul>
+        <li>Не открывайте вложения из писем.</li>
+        <li>Не включайте макросы в Office.</li>
+        <li>Обновляйте Windows и ПО.</li>
+        <li>Используйте антивирус.</li>
+        <li>Храните бэкапы вне компьютера.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>Информация — только для обучения. Создание вредоносного ПО запрещено законом.</p>
+  </footer>
+</div>
+
+<script>
+  const toggle = document.getElementById('theme-toggle');
+  const body = document.body;
+  const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+  let isLight = prefersLight;
+
+  if (isLight) {
+    body.classList.add('light-theme');
+    toggle.textContent = '🌙';
+  } else {
+    toggle.textContent = '☀️';
+  }
+
+  toggle.addEventListener('click', () => {
+    isLight = !isLight;
+    body.classList.toggle('light-theme', isLight);
+    toggle.textContent = isLight ? '🌙' : '☀️';
+  });
+
+  const menuBtn = document.getElementById('menu-btn');
+  const sidebar = document.getElementById('sidebar');
+  menuBtn?.addEventListener('click', () => sidebar.classList.toggle('open'));
+
+  const sections = document.querySelectorAll('section');
+  const links = document.querySelectorAll('#sidebar a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(sec => {
+      const top = sec.offsetTop - 100;
+      const height = sec.offsetHeight;
+      if (window.scrollY >= top && window.scrollY < top + height) {
+        current = sec.id;
+      }
+    });
+    links.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href').slice(1) === current);
+    });
+  });
+
+  const searchBox = document.getElementById('search-box');
+  const hint = document.getElementById('search-hint');
+  const virusMap = {
+    'iloveyou': 'virus-iloveyou',
+    'conficker': 'virus-conficker',
+    'ваникрай': 'virus-wannacry',
+    'wannacry': 'virus-wannacry',
+    'воннакрай': 'virus-wannacry',
+    'петя': 'virus-petya',
+    'petya': 'virus-petya',
+    'notpetya': 'virus-petya',
+    'нотпетя': 'virus-petya',
+    'стакснет': 'virus-stuxnet',
+    'stuxnet': 'virus-stuxnet',
+    'эмотет': 'virus-emotet',
+    'emotet': 'virus-emotet',
+    'майдум': 'virus-mydoom',
+    'mydoom': 'virus-mydoom',
+    'unlocker': 'utilities',
+    'simple': 'utilities',
+    'simpleunlocker': 'utilities'
+  };
+
+  searchBox.addEventListener('input', () => {
+    const q = searchBox.value.trim().toLowerCase();
+    hint.style.display = 'none';
+    if (!q) return;
+
+    for (const [key, id] of Object.entries(virusMap)) {
+      if (key.includes(q) || q.includes(key)) {
+        hint.textContent = `→ Нажмите Enter для перехода к "${key}"`;
+        hint.style.display = 'block';
+        hint.dataset.target = id;
+        return;
+      }
+    }
+    hint.textContent = 'Вирус или инструмент не найден.';
+    hint.style.display = 'block';
+    hint.dataset.target = '';
+  });
+
+  searchBox.addEventListener('keypress', e => {
+    if (e.key === 'Enter' && hint.dataset.target) {
+      document.getElementById(hint.dataset.target)?.scrollIntoView({behavior: 'smooth', block: 'start'});
+      searchBox.value = '';
+      hint.style.display = 'none';
+    }
+  });
+</script>
+
+</body>
+</html>
